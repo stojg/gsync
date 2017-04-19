@@ -2,13 +2,13 @@ package client_test
 
 import (
 	"bufio"
-	"github.com/silverstripeltd/gsync/lib/client"
-	"github.com/silverstripeltd/gsync/lib/server"
+	"encoding/gob"
+	"github.com/stojg/gsync/lib/client"
+	"github.com/stojg/gsync/lib/protocol"
+	"github.com/stojg/gsync/lib/server"
+	"log"
 	"net"
 	"testing"
-	"encoding/gob"
-	"log"
-	"github.com/silverstripeltd/gsync/lib/protocol"
 	"time"
 )
 
@@ -70,7 +70,6 @@ func TestNew(t *testing.T) {
 
 func TestGob(t *testing.T) {
 
-
 	done := make(chan bool)
 
 	// server
@@ -78,7 +77,7 @@ func TestGob(t *testing.T) {
 		enc := gob.NewEncoder(conn)
 		err := enc.Encode(protocol.Message{
 			CurrentTime: time.Now(),
-			Type: protocol.ClockSync,
+			Type:        protocol.ClockSync,
 		})
 		if err != nil {
 			log.Fatal("encode error:", err)
@@ -115,9 +114,7 @@ func TestGob(t *testing.T) {
 		return
 	}
 
-
 	t.Logf("client %v", msg)
-
 
 	<-done
 

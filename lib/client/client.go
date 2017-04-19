@@ -3,6 +3,7 @@ package client
 import (
 	"bufio"
 	"net"
+	"time"
 )
 
 func New(remoteAddress string) *Client {
@@ -22,6 +23,15 @@ func (c *Client) RemoteAddress() string {
 	return c.remoteAddress
 }
 
+func (c *Client) Conn() net.Conn {
+	if c.conn == nil {
+		if err := c.dial(); err != nil {
+			panic(err)
+		}
+	}
+	return c.conn
+}
+
 func (c *Client) Write(b []byte) (int, error) {
 	if c.conn == nil {
 		if err := c.dial(); err != nil {
@@ -36,7 +46,8 @@ func (c *Client) Write(b []byte) (int, error) {
 }
 
 func (c *Client) dial() error {
-	conn, err := net.Dial("tcp", c.remoteAddress)
+	conn, err := net.DialTimeout("tcp", c.remoteAddress, time.Second)
+
 	if err != nil {
 		return err
 	}

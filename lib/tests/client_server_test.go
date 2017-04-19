@@ -2,10 +2,14 @@ package client_test
 
 import (
 	"bufio"
-	"github.com/stojg/gsync/lib/client"
-	"github.com/stojg/gsync/lib/server"
+	"github.com/silverstripeltd/gsync/lib/client"
+	"github.com/silverstripeltd/gsync/lib/server"
 	"net"
 	"testing"
+	"encoding/gob"
+	"log"
+	"github.com/silverstripeltd/gsync/lib/protocol"
+	"time"
 )
 
 func TestNew(t *testing.T) {
@@ -62,4 +66,59 @@ func TestNew(t *testing.T) {
 	if string(receivedMsg) != string(msgToSend) {
 		t.Errorf("Expected to recieve message '%s', but got '%s'", msgToSend, receivedMsg)
 	}
+}
+
+func TestGob(t *testing.T) {
+
+
+	done := make(chan bool)
+
+	// server
+	connHandler := func(conn net.Conn) {
+		enc := gob.NewEncoder(conn)
+		err := enc.Encode(protocol.Message{
+			CurrentTime: time.Now(),
+			Type: protocol.ClockSync,
+		})
+		if err != nil {
+			log.Fatal("encode error:", err)
+		}
+		done <- true
+		defer conn.Close()
+	}
+
+	s, err := server.New(":", connHandler)
+	if err != nil {
+		t.Errorf("Did not expect error during server.New(): %v\n", err)
+		return
+	}
+	defer s.Close()
+
+	c := client.New(s.LocalAddress())
+	if c == nil {
+		t.Errorf("Did not expect error during client.New(): %v\n", err)
+		return
+	}
+	defer c.Close()
+
+	if c.RemoteAddress() != s.LocalAddress() {
+		t.Errorf("expected client.RemoteAddress connect to %s, but got %s\n", s.LocalAddress(), c.RemoteAddress())
+	}
+
+	dec := gob.NewDecoder(c.Conn())
+
+	var msg protocol.Message
+
+	err = dec.Decode(&msg)
+	if err != nil {
+		t.Errorf("Error during gob.Decode: %v\n", err)
+		return
+	}
+
+
+	t.Logf("client %v", msg)
+
+
+	<-done
+
 }

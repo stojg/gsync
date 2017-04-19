@@ -9,10 +9,13 @@ all:
 dev:
 	go fmt . ./lib/...
 	go vet . ./lib/...
-	go test . ./lib/...
 
 install: dev
 	go install .
+
+
+test: dev
+	go test . ./lib/...
 
 release: dev
 	GOOS=linux GOARCH=amd64 go build -o ${BINARY}_linux ${LDFLAGS} .

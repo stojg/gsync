@@ -5,9 +5,11 @@ import (
 	"net"
 )
 
-func New(ladress string, handler func(net.Conn)) (*Server, error) {
+func New(ladress string, handler func(net.Conn, string, int), testDirectory string, numFiles int) (*Server, error) {
 	s := &Server{
 		handler: handler,
+		dir:     testDirectory,
+		num:     numFiles,
 	}
 
 	address, err := net.ResolveTCPAddr("tcp", ladress)
@@ -25,7 +27,9 @@ func New(ladress string, handler func(net.Conn)) (*Server, error) {
 
 type Server struct {
 	listener     *net.TCPListener
-	handler      func(net.Conn)
+	dir          string
+	num          int
+	handler      func(conn net.Conn, dir string, num int)
 	localAddress string
 	quit         chan bool
 }
@@ -45,7 +49,7 @@ func (s *Server) listen() {
 			fmt.Println(err)
 			continue
 		}
-		go s.handler(conn)
+		go s.handler(conn, s.dir, s.num)
 
 	}
 }

@@ -1,10 +1,9 @@
 VERSION=`git describe --tags`
 BUILDTIME=`date -u +%a,\ %d\ %b\ %Y\ %H:%M:%S\ GMT`
-LDFLAGS=""
-BINARY=aragorn
+BINARY=gsync
 
 all:
-	go build ${LDFLAGS} -o ${BINARY} .
+	go build -o ${BINARY} .
 
 dev:
 	go fmt . ./lib/...
@@ -18,9 +17,7 @@ test: dev
 	go test . ./lib/...
 
 release: dev
-	GOOS=linux GOARCH=amd64 go build -o ${BINARY}_linux ${LDFLAGS} .
-	GOOS=windows GOARCH=amd64 go build -o ${BINARY}_windows ${LDFLAGS} .
-	GOOS=darwin GOARCH=amd64 go build -o ${BINARY}_darwin ${LDFLAGS} .
+	GOOS=linux GOARCH=amd64 go build -o ${BINARY}_linux .
 
 clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi

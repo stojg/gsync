@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/gob"
 	"github.com/stojg/gsync/lib/client"
-	"github.com/stojg/gsync/lib/protocol"
+	"github.com/stojg/gsync/lib/msg"
 	"github.com/stojg/gsync/lib/server"
 	"log"
 	"net"
@@ -75,9 +75,9 @@ func TestGob(t *testing.T) {
 	// server
 	connHandler := func(conn net.Conn) {
 		enc := gob.NewEncoder(conn)
-		err := enc.Encode(protocol.Message{
+		err := enc.Encode(msg.Message{
 			CurrentTime: time.Now(),
-			Type:        protocol.ClockSync,
+			Type:        msg.ClockSync,
 		})
 		if err != nil {
 			log.Fatal("encode error:", err)
@@ -106,7 +106,7 @@ func TestGob(t *testing.T) {
 
 	dec := gob.NewDecoder(c.Conn())
 
-	var msg protocol.Message
+	var msg msg.Message
 
 	err = dec.Decode(&msg)
 	if err != nil {
